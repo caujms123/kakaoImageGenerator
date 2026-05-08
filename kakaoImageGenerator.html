@@ -1,0 +1,1734 @@
+<!DOCTYPE html>
+<!-- saved from url=(0050)https://helpful-mochi-991119.netlify.app/test.html -->
+<html lang="ko"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>카카오 이미지 생성기</title>
+    <script src="./kakaoImageGenerator_files/xlsx.full.min.js.다운로드"></script>
+    <link href="./kakaoImageGenerator_files/css2" rel="stylesheet">
+    <style>
+      /* ── RESET & BASE ── */
+      *,
+      *::before,
+      *::after {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+        -webkit-tap-highlight-color: transparent;
+      }
+      :root {
+        --bg: #f9f9f9;
+        --surface: #ffffff;
+        --border: #e5e7eb;
+        --border-focus: #6366f1;
+        --text: #111827;
+        --text-2: #6b7280;
+        --text-3: #9ca3af;
+        --accent: #6366f1;
+        --accent-light: #eef2ff;
+        --accent-2: #4f46e5;
+        --success: #10b981;
+        --warning: #f59e0b;
+        --danger: #ef4444;
+        --chip-bg: #f3f4f6;
+        --chip-sel: #6366f1;
+        --chip-sel-text: #fff;
+        --radius-sm: 6px;
+        --radius: 10px;
+        --radius-lg: 14px;
+        --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.08), 0 1px 2px rgba(0, 0, 0, 0.04);
+        --shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+        --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.1);
+      }
+      body {
+        font-family: 'Inter', 'Noto Sans KR', sans-serif;
+        background: var(--bg);
+        color: var(--text);
+        min-height: 100vh;
+        font-size: 14px;
+        line-height: 1.5;
+      }
+
+      /* ── HEADER ── */
+      .header {
+        background: var(--surface);
+        border-bottom: 1px solid var(--border);
+        padding: 0 24px;
+        height: 56px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        position: sticky;
+        top: 0;
+        z-index: 200;
+      }
+      .header-icon {
+        width: 32px;
+        height: 32px;
+        background: var(--accent);
+        border-radius: var(--radius-sm);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 16px;
+        flex-shrink: 0;
+      }
+      .header-title {
+        font-weight: 600;
+        font-size: 15px;
+        color: var(--text);
+      }
+      .header-sub {
+        font-size: 12px;
+        color: var(--text-3);
+        margin-left: 4px;
+      }
+
+      /* ── LAYOUT ── */
+      .main {
+        max-width: 960px;
+        margin: 0 auto;
+        padding: 28px 20px 60px;
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+      }
+
+      /* ── STEP BAR ── */
+      .stepbar {
+        display: flex;
+        align-items: center;
+        gap: 0;
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: var(--radius-lg);
+        padding: 4px;
+        overflow-x: auto;
+      }
+      .stepbar-item {
+        flex: 1;
+        min-width: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+        padding: 8px 12px;
+        border-radius: var(--radius);
+        font-size: 12px;
+        font-weight: 500;
+        color: var(--text-3);
+        white-space: nowrap;
+        transition: all 0.2s;
+        cursor: default;
+      }
+      .stepbar-item.active {
+        background: var(--accent-light);
+        color: var(--accent);
+        font-weight: 600;
+      }
+      .stepbar-item.done {
+        color: var(--success);
+      }
+      .stepbar-item .snum {
+        width: 18px;
+        height: 18px;
+        border-radius: 50%;
+        background: currentColor;
+        color: var(--surface);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 10px;
+        font-weight: 700;
+        flex-shrink: 0;
+      }
+      .stepbar-item.active .snum {
+        background: var(--accent);
+        color: #fff;
+      }
+      .stepbar-item.done .snum {
+        background: var(--success);
+        color: #fff;
+      }
+      .stepbar-div {
+        width: 1px;
+        height: 20px;
+        background: var(--border);
+        flex-shrink: 0;
+      }
+
+      /* ── CARD ── */
+      .card {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: var(--radius-lg);
+        overflow: hidden;
+      }
+      .card-head {
+        padding: 16px 20px;
+        border-bottom: 1px solid var(--border);
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+      .card-head-icon {
+        font-size: 16px;
+      }
+      .card-head-title {
+        font-weight: 600;
+        font-size: 14px;
+        flex: 1;
+      }
+      .card-head-badge {
+        background: var(--accent-light);
+        color: var(--accent);
+        border-radius: 99px;
+        padding: 2px 10px;
+        font-size: 11px;
+        font-weight: 600;
+      }
+      .card-body {
+        padding: 20px;
+      }
+
+      /* ── UPLOAD ZONE ── */
+      .upload-zone {
+        border: 2px dashed var(--border);
+        border-radius: var(--radius-lg);
+        background: var(--bg);
+        padding: 36px 20px;
+        text-align: center;
+        cursor: pointer;
+        position: relative;
+        transition: all 0.2s;
+      }
+      .upload-zone:hover,
+      .upload-zone.drag-over {
+        border-color: var(--accent);
+        background: var(--accent-light);
+      }
+      .upload-zone input[type='file'] {
+        position: absolute;
+        inset: 0;
+        opacity: 0;
+        cursor: pointer;
+        width: 100%;
+      }
+      .upload-icon {
+        font-size: 32px;
+        margin-bottom: 10px;
+      }
+      .upload-title {
+        font-size: 14px;
+        font-weight: 600;
+        color: var(--text);
+        margin-bottom: 4px;
+      }
+      .upload-sub {
+        font-size: 12px;
+        color: var(--text-3);
+      }
+
+      /* ── BUTTON ── */
+      .btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+        padding: 8px 16px;
+        border-radius: var(--radius);
+        font-size: 13px;
+        font-weight: 500;
+        cursor: pointer;
+        border: none;
+        transition: all 0.15s;
+        font-family: inherit;
+      }
+      .btn-primary {
+        background: var(--accent);
+        color: #fff;
+      }
+      .btn-primary:hover {
+        background: var(--accent-2);
+      }
+      .btn-primary:disabled {
+        opacity: 0.45;
+        cursor: not-allowed;
+      }
+      .btn-outline {
+        background: var(--surface);
+        color: var(--text);
+        border: 1px solid var(--border);
+      }
+      .btn-outline:hover {
+        background: var(--bg);
+        border-color: var(--accent);
+        color: var(--accent);
+      }
+      .btn-ghost {
+        background: transparent;
+        color: var(--text-2);
+        border: 1px solid var(--border);
+      }
+      .btn-ghost:hover {
+        background: var(--bg);
+      }
+      .btn-success {
+        background: var(--success);
+        color: #fff;
+      }
+      .btn-success:hover {
+        background: #059669;
+      }
+      .btn-sm {
+        padding: 5px 11px;
+        font-size: 12px;
+      }
+      .btn-lg {
+        padding: 13px 24px;
+        font-size: 15px;
+        font-weight: 600;
+        width: 100%;
+      }
+
+      /* ── TABLE ── */
+      .table-wrap {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        border-radius: var(--radius);
+        border: 1px solid var(--border);
+      }
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 12px;
+      }
+      thead tr {
+        background: var(--bg);
+      }
+      thead th {
+        padding: 10px 14px;
+        text-align: left;
+        font-size: 11px;
+        font-weight: 600;
+        color: var(--text-2);
+        border-bottom: 1px solid var(--border);
+        white-space: nowrap;
+      }
+      tbody tr {
+        border-bottom: 1px solid var(--border);
+        transition: background 0.1s;
+      }
+      tbody tr:last-child {
+        border-bottom: none;
+      }
+      tbody tr:hover {
+        background: #fafafa;
+      }
+      tbody td {
+        padding: 9px 14px;
+        color: var(--text);
+      }
+      .rnum {
+        color: var(--text-3);
+        font-size: 11px;
+      }
+
+      /* ── CHIPS ── */
+      .chips-wrap {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 7px;
+      }
+      .chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        padding: 7px 14px;
+        border-radius: 99px;
+        border: 1.5px solid var(--border);
+        background: var(--surface);
+        color: var(--text);
+        font-size: 13px;
+        font-weight: 500;
+        cursor: pointer;
+        user-select: none;
+        -webkit-user-select: none;
+        transition: all 0.15s;
+        position: relative;
+      }
+      .chip:hover {
+        border-color: var(--accent);
+        color: var(--accent);
+        background: var(--accent-light);
+      }
+      .chip.selected {
+        background: var(--accent);
+        color: #fff;
+        border-color: var(--accent);
+        box-shadow: 0 2px 8px rgba(99, 102, 241, 0.35);
+      }
+      .chip.placed::after {
+        content: '✓';
+        font-size: 10px;
+        opacity: 0.7;
+      }
+      .chip.placed {
+        border-style: dashed;
+      }
+
+      /* ── HINT BOX ── */
+      .hint {
+        background: var(--accent-light);
+        border: 1px solid #c7d2fe;
+        border-radius: var(--radius);
+        padding: 12px 14px;
+        font-size: 12px;
+        color: #4338ca;
+        line-height: 1.7;
+      }
+
+      /* ── CANVAS ZONE ── */
+      .canvas-zone {
+        background: #f1f5f9;
+        border: 2px dashed var(--border);
+        border-radius: var(--radius-lg);
+        min-height: 200px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        position: relative;
+        overflow: hidden;
+        touch-action: none;
+        transition: border-color 0.2s;
+      }
+      .canvas-zone.tap-ready {
+        border-color: var(--accent);
+        background: #eef2ff;
+      }
+      .canvas-placeholder {
+        text-align: center;
+        color: var(--text-3);
+        font-size: 13px;
+        padding: 32px;
+      }
+      .canvas-placeholder .ph-icon {
+        font-size: 36px;
+        margin-bottom: 10px;
+      }
+
+      #templateWrapper {
+        position: relative;
+        display: none;
+        line-height: 0;
+      }
+      #bgImg {
+        display: block;
+        max-width: 100%;
+        max-height: 56vh;
+        border-radius: var(--radius);
+      }
+
+      /* TAP HINT OVERLAY */
+      .tap-overlay {
+        position: absolute;
+        inset: 0;
+        border-radius: var(--radius-lg);
+        background: rgba(99, 102, 241, 0.12);
+        border: 2px dashed var(--accent);
+        display: none;
+        align-items: center;
+        justify-content: center;
+        pointer-events: none;
+        z-index: 50;
+        font-size: 14px;
+        font-weight: 600;
+        color: var(--accent);
+        gap: 8px;
+      }
+      .tap-overlay.show {
+        display: flex;
+      }
+
+      /* ── PLACED FIELD ── */
+      .placed-field {
+        position: absolute;
+        background: rgba(255, 255, 255, 0.92);
+        border: 1.5px solid var(--accent);
+        border-radius: var(--radius-sm);
+        padding: 4px 8px 4px 10px;
+        display: flex;
+        align-items: center;
+        gap: 5px;
+        white-space: nowrap;
+        cursor: move;
+        touch-action: none;
+        user-select: none;
+        -webkit-user-select: none;
+        box-shadow: 0 2px 10px rgba(99, 102, 241, 0.22);
+        z-index: 20;
+        transition: box-shadow 0.1s;
+        font-family: 'Inter', 'Noto Sans KR', sans-serif;
+      }
+      .placed-field:active {
+        box-shadow: 0 4px 16px rgba(99, 102, 241, 0.4);
+      }
+      .placed-field .pf-label {
+        font-size: 12px;
+        font-weight: 600;
+        color: var(--accent);
+      }
+      .placed-field .pf-remove {
+        width: 16px;
+        height: 16px;
+        border-radius: 50%;
+        background: var(--border);
+        color: var(--text-2);
+        border: none;
+        cursor: pointer;
+        font-size: 11px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+        line-height: 1;
+        transition: all 0.15s;
+      }
+      .placed-field .pf-remove:hover {
+        background: var(--danger);
+        color: #fff;
+      }
+
+      /* ── BG TEMPLATE BTNS ── */
+      .tpl-row {
+        display: flex;
+        gap: 8px;
+        margin-top: 8px;
+      }
+      .bg-upload-box {
+        border: 1.5px dashed var(--border);
+        border-radius: var(--radius);
+        padding: 14px;
+        text-align: center;
+        cursor: pointer;
+        position: relative;
+        transition: all 0.2s;
+        margin-bottom: 8px;
+      }
+      .bg-upload-box:hover {
+        border-color: var(--accent);
+        background: var(--accent-light);
+      }
+      .bg-upload-box input {
+        position: absolute;
+        inset: 0;
+        opacity: 0;
+        cursor: pointer;
+        width: 100%;
+      }
+      .bg-upload-box p {
+        font-size: 12px;
+        color: var(--text-3);
+      }
+
+      /* ── FIELD LIST ── */
+      .field-list {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+      }
+      .field-row {
+        background: var(--bg);
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        padding: 9px 12px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 12px;
+      }
+      .field-row .fr-name {
+        font-weight: 600;
+        flex: 1;
+        color: var(--text);
+      }
+      .field-row .fr-pos {
+        font-size: 10px;
+        color: var(--text-3);
+        min-width: 60px;
+      }
+      .field-row input[type='number'] {
+        width: 48px;
+        border: 1px solid var(--border);
+        border-radius: var(--radius-sm);
+        padding: 4px 6px;
+        font-size: 11px;
+        font-family: inherit;
+      }
+      .field-row input[type='color'] {
+        width: 26px;
+        height: 22px;
+        border: 1px solid var(--border);
+        border-radius: var(--radius-sm);
+        cursor: pointer;
+        padding: 1px;
+      }
+      .field-row .fr-del {
+        background: none;
+        border: none;
+        cursor: pointer;
+        color: var(--text-3);
+        font-size: 16px;
+        padding: 0 2px;
+        line-height: 1;
+      }
+      .field-row .fr-del:hover {
+        color: var(--danger);
+      }
+
+      /* ── STYLE ROW ── */
+      .style-row {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        flex-wrap: wrap;
+      }
+      .style-row label {
+        font-size: 11px;
+        color: var(--text-3);
+        font-weight: 500;
+      }
+      .style-row select {
+        border: 1px solid var(--border);
+        border-radius: var(--radius-sm);
+        padding: 6px 8px;
+        font-size: 12px;
+        background: var(--surface);
+        font-family: inherit;
+        color: var(--text);
+      }
+      .style-row input[type='color'] {
+        width: 30px;
+        height: 28px;
+        border: 1px solid var(--border);
+        border-radius: var(--radius-sm);
+        cursor: pointer;
+        padding: 1px;
+      }
+
+      /* ── DIVIDER ── */
+      .divider {
+        height: 1px;
+        background: var(--border);
+        margin: 16px 0;
+      }
+
+      /* ── SECTION LABEL ── */
+      .section-label {
+        font-size: 11px;
+        font-weight: 600;
+        color: var(--text-3);
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        margin-bottom: 8px;
+      }
+
+      /* ── PROGRESS ── */
+      .progress-wrap {
+        margin-top: 10px;
+        display: none;
+      }
+      .progress-track {
+        height: 6px;
+        background: var(--border);
+        border-radius: 99px;
+        overflow: hidden;
+      }
+      .progress-fill {
+        height: 100%;
+        background: var(--accent);
+        border-radius: 99px;
+        width: 0%;
+        transition: width 0.2s;
+      }
+      .progress-text {
+        font-size: 12px;
+        color: var(--text-3);
+        text-align: center;
+        margin-top: 6px;
+      }
+
+      /* ── PREVIEW GRID ── */
+      .preview-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+        gap: 10px;
+        max-height: 400px;
+        overflow-y: auto;
+      }
+      .preview-card {
+        border-radius: var(--radius);
+        overflow: hidden;
+        border: 1px solid var(--border);
+        cursor: pointer;
+        transition: transform 0.15s, box-shadow 0.15s;
+        position: relative;
+      }
+      .preview-card:hover {
+        transform: translateY(-2px);
+        box-shadow: var(--shadow);
+      }
+      .preview-card img {
+        width: 100%;
+        display: block;
+      }
+      .preview-card .pc-label {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        background: rgba(0, 0, 0, 0.6);
+        color: #fff;
+        font-size: 10px;
+        padding: 4px 7px;
+        overflow: hidden;
+        white-space: nowrap;
+        text-overflow: ellipsis;
+      }
+
+      /* ── TOAST ── */
+      .toast {
+        position: fixed;
+        bottom: 24px;
+        left: 50%;
+        transform: translateX(-50%) translateY(80px);
+        background: #111827;
+        color: #fff;
+        padding: 10px 18px;
+        border-radius: 99px;
+        font-size: 13px;
+        font-weight: 500;
+        box-shadow: var(--shadow-lg);
+        z-index: 9999;
+        transition: transform 0.28s cubic-bezier(0.34, 1.56, 0.64, 1);
+        white-space: nowrap;
+        max-width: 92vw;
+        text-align: center;
+      }
+      .toast.show {
+        transform: translateX(-50%) translateY(0);
+      }
+
+      /* ── GAP UTIL ── */
+      .gap-8 {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+      }
+      .gap-12 {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+      }
+      .gap-16 {
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+      }
+      .row {
+        display: flex;
+        gap: 8px;
+        align-items: center;
+      }
+      .mt-8 {
+        margin-top: 8px;
+      }
+      .mt-12 {
+        margin-top: 12px;
+      }
+      .mt-16 {
+        margin-top: 16px;
+      }
+
+      @media (max-width: 600px) {
+        .main {
+          padding: 16px 12px 60px;
+        }
+        .card-body {
+          padding: 14px;
+        }
+        .stepbar-item {
+          padding: 7px 8px;
+          font-size: 11px;
+        }
+      }
+    </style>
+  <style id="highlight-mengshou-style">
+    .highlight-mengshou-wrap {
+        background: #ff9;
+        cursor: pointer;
+    }
+    .highlight-mengshou-wrap.active {
+        background: #ffb;
+    }
+</style></head>
+  <body>
+    <!-- HEADER -->
+    <header class="header">
+      <div class="header-icon">🖼</div>
+      <span class="header-title">카카오 이미지 생성기</span>
+      <span class="header-sub">설계사 개인화 메시지</span>
+    </header>
+
+    <div class="main">
+      <!-- STEP BAR -->
+      <div class="stepbar">
+        <div class="stepbar-item active" id="si1">
+          <span class="snum">1</span>엑셀 업로드
+        </div>
+        <div class="stepbar-div"></div>
+        <div class="stepbar-item" id="si2">
+          <span class="snum">2</span>배경 이미지
+        </div>
+        <div class="stepbar-div"></div>
+        <div class="stepbar-item" id="si3">
+          <span class="snum">3</span>컬럼 배치
+        </div>
+        <div class="stepbar-div"></div>
+        <div class="stepbar-item" id="si4">
+          <span class="snum">4</span>이미지 생성
+        </div>
+      </div>
+
+      <!-- STEP 1: EXCEL -->
+      <div class="card" id="card-excel">
+        <div class="card-head">
+          <span class="card-head-icon">📊</span>
+          <span class="card-head-title">엑셀 파일 업로드</span>
+          <span class="card-head-badge" id="badge-rows" style="display: none"></span>
+        </div>
+        <div class="card-body gap-12">
+          <div class="upload-zone" id="uploadZone">
+            <input type="file" id="excelFile" accept=".xlsx,.xls,.csv">
+            <div class="upload-icon">📂</div>
+            <div class="upload-title">파일을 선택하거나 드래그하세요</div>
+            <div class="upload-sub">.xlsx · .xls · .csv — 소속, 지점장, 유실적, 목표금액, 현재매출 등</div>
+          </div>
+          <div>
+            <button class="btn btn-ghost btn-sm" onclick="loadSample()">
+              📋 샘플 데이터로 테스트
+            </button>
+          </div>
+          <div id="gridWrap" style="display: none">
+            <div class="table-wrap">
+              <table>
+                <thead id="tHead"></thead>
+                <tbody id="tBody"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- STEP 2+3: EDITOR -->
+      <div class="card" id="card-editor" style="display: none">
+        <div class="card-head">
+          <span class="card-head-icon">🎨</span>
+          <span class="card-head-title">배경 이미지 &amp; 컬럼 배치</span>
+        </div>
+        <div class="card-body gap-16">
+          <!-- BG IMAGE -->
+          <div class="gap-8">
+            <div class="section-label">배경 이미지</div>
+            <div class="bg-upload-box">
+              <input type="file" id="bgFile" accept="image/*">
+              <p>📁 이미지 선택 (PNG / JPG)</p>
+            </div>
+            <div class="tpl-row">
+              <button class="btn btn-outline btn-sm" onclick="makeTpl(&#39;blue&#39;)" style="flex: 1">
+                🔵 파란 템플릿
+              </button>
+              <button class="btn btn-outline btn-sm" onclick="makeTpl(&#39;yellow&#39;)" style="flex: 1">
+                🟡 노란 템플릿
+              </button>
+              <button class="btn btn-outline btn-sm" onclick="makeTpl(&#39;dark&#39;)" style="flex: 1">
+                ⚫ 다크 템플릿
+              </button>
+            </div>
+          </div>
+
+          <div class="divider"></div>
+
+          <!-- CHIPS -->
+          <div class="gap-8">
+            <div class="section-label">컬럼 선택 후 이미지 탭하여 배치</div>
+            <div class="hint" id="hintBox">
+              ① 아래 <strong>컬럼 버튼 탭</strong>하면 선택됩니다<br>
+              ② 배경 이미지를 <strong>탭</strong>하면 해당 위치에 배치<br>
+              ③ 배치된 태그를 <strong>드래그</strong>해서 위치 미세조정
+            </div>
+            <div class="chips-wrap" id="chipsWrap"></div>
+          </div>
+
+          <!-- IMAGE CANVAS -->
+          <div class="canvas-zone" id="canvasZone">
+            <div class="tap-overlay" id="tapOverlay">
+              📍 이미지를 탭해서 배치
+            </div>
+            <div class="canvas-placeholder" id="canvasPlaceholder">
+              <div class="ph-icon">🖼</div>
+              <div>배경 이미지를 먼저 선택하세요</div>
+            </div>
+            <div id="templateWrapper">
+              <img id="bgImg" src="https://helpful-mochi-991119.netlify.app/test.html" alt="">
+            </div>
+          </div>
+
+          <!-- PLACED FIELDS -->
+          <div class="gap-8" id="fieldSection" style="display: none">
+            <div class="section-label">배치된 필드</div>
+            <div class="field-list" id="fieldList"></div>
+          </div>
+
+          <div class="divider"></div>
+
+          <!-- TEXT STYLE -->
+          <div class="gap-8">
+            <div class="section-label">텍스트 스타일 (전체 적용)</div>
+            <div class="style-row">
+              <label>크기</label>
+              <select id="gSize">
+                <option value="11">11</option>
+                <option value="12">12</option>
+                <option value="13">13</option>
+                <option value="14">14</option>
+                <option value="16" selected="">
+                  16
+                </option>
+                <option value="18">18</option>
+                <option value="20">20</option>
+                <option value="22">22</option>
+                <option value="24">24</option>
+                <option value="28">28</option>
+                <option value="32">32</option>
+                <option value="36">36</option>
+              </select>
+              <label>색상</label>
+              <input type="color" id="gColor" value="#111827">
+              <label>굵기</label>
+              <select id="gWeight">
+                <option value="400">보통</option>
+                <option value="600" selected="">
+                  굵게
+                </option>
+                <option value="700">매우굵게</option>
+              </select>
+              <label>정렬</label>
+              <select id="gAlign">
+                <option value="left" selected="">
+                  좌측
+                </option>
+                <option value="center">중앙</option>
+                <option value="right">우측</option>
+              </select>
+              <button class="btn btn-outline btn-sm" onclick="applyStyle()">
+                전체 적용
+              </button>
+            </div>
+          </div>
+
+          <!-- FOLDER SETTINGS -->
+          <div class="gap-8">
+            <div class="section-label">📁 폴더 저장 설정</div>
+            <div class="style-row">
+              <label>폴더 기준 컬럼</label>
+              <select id="folderCol">
+                <option value="">— 폴더 없이 저장 —</option>
+              </select>
+              <label>파일명 기준 컬럼</label>
+              <select id="fileNameCol">
+                <option value="">— 순번 사용 —</option>
+              </select>
+            </div>
+            <div class="hint" style="font-size: 11px; padding: 10px 12px">
+              💡 버튼 클릭 후 Finder에서 <code style="background: #e0e7ff; padding: 1px 5px; border-radius: 4px">download</code> 폴더를 선택하세요.<br>
+              선택한 폴더 안에 <strong>폴더 기준 컬럼</strong> 값으로 하위 폴더가 자동 생성됩니다.
+            </div>
+          </div>
+
+          <!-- GENERATE BTN -->
+          <button class="btn btn-primary btn-lg" id="btnGen" onclick="generate()" disabled="">
+            ⚡ 이미지 생성 &amp; 폴더 저장
+          </button>
+          <div class="progress-wrap" id="progressWrap">
+            <div class="progress-track">
+              <div class="progress-fill" id="progressFill"></div>
+            </div>
+            <div class="progress-text" id="progressText"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- STEP 4: RESULTS -->
+      <div class="card" id="card-results" style="display: none">
+        <div class="card-head">
+          <span class="card-head-icon">📦</span>
+          <span class="card-head-title">저장 완료</span>
+          <span class="card-head-badge" id="badge-res"></span>
+        </div>
+        <div class="card-body gap-12">
+          <!-- 저장 로그 -->
+          <div id="saveLog" style="
+              background: var(--bg);
+              border: 1px solid var(--border);
+              border-radius: var(--radius);
+              padding: 12px;
+              max-height: 280px;
+              overflow-y: auto;
+              font-size: 12px;
+              font-family: monospace;
+              line-height: 1.8;
+            "></div>
+          <div style="text-align: center">
+            <button class="btn btn-outline btn-sm" onclick="document.getElementById(&#39;card-results&#39;).style.display=&#39;none&#39;; generate()">
+              🔄 다시 저장
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- HIDDEN CANVAS -->
+    <canvas id="rc" style="display: none"></canvas>
+    <div class="toast" id="toast"></div>
+
+    <script>
+      'use strict';
+
+      // ══ STATE ══
+      let rows = [],
+        headers = [],
+        fields = [],
+        imgs = [];
+      let bgSrc = null,
+        selCol = null;
+
+      // ══ TOAST ══
+      let toastTimer;
+      function toast(msg, ms = 2800) {
+        const el = document.getElementById('toast');
+        el.textContent = msg;
+        el.classList.add('show');
+        clearTimeout(toastTimer);
+        toastTimer = setTimeout(() => el.classList.remove('show'), ms);
+      }
+
+      // ══ STEPS ══
+      function setStep(n) {
+        [1, 2, 3, 4].forEach((i) => {
+          const el = document.getElementById('si' + i);
+          el.className = 'stepbar-item' + (i < n ? ' done' : i === n ? ' active' : '');
+        });
+      }
+
+      // ══ EXCEL ══
+      document.getElementById('excelFile').addEventListener('change', (e) => parseExcel(e.target.files[0]));
+      const uz = document.getElementById('uploadZone');
+      uz.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        uz.classList.add('drag-over');
+      });
+      uz.addEventListener('dragleave', () => uz.classList.remove('drag-over'));
+      uz.addEventListener('drop', (e) => {
+        e.preventDefault();
+        uz.classList.remove('drag-over');
+        parseExcel(e.dataTransfer.files[0]);
+      });
+
+      function parseExcel(file) {
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          const wb = XLSX.read(e.target.result, { type: 'binary' });
+          const ws = wb.Sheets[wb.SheetNames[0]];
+          const json = XLSX.utils.sheet_to_json(ws, { header: 1, defval: '' });
+          if (!json.length) return toast('⚠ 데이터가 없습니다');
+          headers = json[0].map((h) => String(h).trim()).filter(Boolean);
+          rows = json.slice(1).filter((r) => r.some((c) => String(c).trim() !== ''));
+          afterLoad();
+        };
+        reader.readAsBinaryString(file);
+      }
+
+      function loadSample() {
+        headers = ['소속', '지점장', '유실적', '목표금액', '현재매출', '달성률'];
+        rows = [
+          ['서울강남지점', '김철수', '850만원', '1,000만원', '780만원', '78%'],
+          ['서울서초지점', '이영희', '1,200만원', '1,500만원', '1,350만원', '90%'],
+          ['부산해운대지점', '박민준', '680만원', '900만원', '720만원', '80%'],
+          ['대구수성지점', '최지연', '950만원', '1,100만원', '880만원', '80%'],
+          ['인천남동지점', '정승현', '420만원', '700만원', '510만원', '73%'],
+        ];
+        afterLoad();
+      }
+
+      function afterLoad() {
+        // render table
+        document.getElementById('tHead').innerHTML = `<tr><th>#</th>${headers.map((h) => `<th>${h}</th>`).join('')}</tr>`;
+        document.getElementById('tBody').innerHTML =
+          rows
+            .slice(0, 30)
+            .map((r, i) => `<tr><td class="rnum">${i + 1}</td>${headers.map((_, j) => `<td>${r[j] ?? ''}</td>`).join('')}</tr>`)
+            .join('') +
+          (rows.length > 30 ? `<tr><td colspan="${headers.length + 1}" style="text-align:center;padding:8px;color:var(--text-3);font-size:11px;">외 ${rows.length - 30}행</td></tr>` : '');
+        document.getElementById('gridWrap').style.display = 'block';
+        document.getElementById('badge-rows').textContent = `${rows.length}행`;
+        document.getElementById('badge-rows').style.display = 'inline';
+        // 폴더·파일명 컬럼 셀렉터 채우기
+        const folderSel = document.getElementById('folderCol');
+        const fileNameSel = document.getElementById('fileNameCol');
+        folderSel.innerHTML = `<option value="">— 폴더 없이 저장 —</option>` + headers.map((h) => `<option value="${h}">${h}</option>`).join('');
+        fileNameSel.innerHTML = `<option value="">— 순번 사용 —</option>` + headers.map((h) => `<option value="${h}">${h}</option>`).join('');
+        // 기본값: 첫 번째 컬럼을 폴더 기준으로
+        if (headers.length > 0) folderSel.value = headers[0];
+        if (headers.length > 1) fileNameSel.value = headers[1];
+
+        renderChips();
+        document.getElementById('card-editor').style.display = 'block';
+        setStep(2);
+        toast(`✅ ${rows.length}개 행 로드 완료`);
+        document.getElementById('card-editor').scrollIntoView({ behavior: 'smooth' });
+      }
+
+      // ══ CHIPS ══
+      function renderChips() {
+        document.getElementById('chipsWrap').innerHTML = headers.map((h) => `<button class="chip" data-col="${h}" onclick="selectChip('${h}')">${h}</button>`).join('');
+      }
+
+      function selectChip(col) {
+        if (selCol === col) {
+          selCol = null;
+          refreshChips();
+          document.getElementById('tapOverlay').classList.remove('show');
+          document.getElementById('canvasZone').classList.remove('tap-ready');
+          return;
+        }
+        selCol = col;
+        refreshChips();
+        if (bgSrc) {
+          document.getElementById('tapOverlay').classList.add('show');
+          document.getElementById('canvasZone').classList.add('tap-ready');
+          toast(`[${col}] 선택됨 — 이미지를 탭해서 배치`);
+        } else {
+          toast('⚠ 먼저 배경 이미지를 선택하세요');
+        }
+      }
+
+      function refreshChips() {
+        document.querySelectorAll('.chip').forEach((el) => {
+          const col = el.dataset.col;
+          const placed = fields.some((f) => f.col === col);
+          el.className = 'chip' + (col === selCol ? ' selected' : '') + (placed ? ' placed' : '');
+        });
+      }
+
+      // ══ BG IMAGE ══
+      document.getElementById('bgFile').addEventListener('change', (e) => {
+        const f = e.target.files[0];
+        if (!f) return;
+        const reader = new FileReader();
+        reader.onload = (ev) => loadBg(ev.target.result);
+        reader.readAsDataURL(f);
+      });
+
+      function loadBg(src) {
+        bgSrc = src;
+        const img = document.getElementById('bgImg');
+        img.src = src;
+        img.onload = () => {
+          document.getElementById('canvasPlaceholder').style.display = 'none';
+          document.getElementById('templateWrapper').style.display = 'block';
+          // re-render existing placed tags
+          document.querySelectorAll('.placed-field').forEach((el) => el.remove());
+          fields.forEach((f) => renderTag(f));
+          setStep(3);
+          checkReady();
+          toast('🖼 이미지 로드 완료! 컬럼 선택 후 탭하여 배치하세요');
+        };
+      }
+
+      // ══ TEMPLATES ══
+      function makeTpl(type) {
+        const canvas = document.getElementById('rc');
+        const ctx = canvas.getContext('2d');
+        canvas.width = 640;
+        canvas.height = 420;
+
+        const draw = () => {
+          if (type === 'blue') {
+            const g = ctx.createLinearGradient(0, 0, 640, 420);
+            g.addColorStop(0, '#1e3a8a');
+            g.addColorStop(1, '#1d4ed8');
+            ctx.fillStyle = g;
+            ctx.fillRect(0, 0, 640, 420);
+            // top accent bar
+            ctx.fillStyle = '#fbbf24';
+            ctx.fillRect(0, 0, 640, 6);
+            // bottom bar
+            ctx.fillStyle = '#fbbf24';
+            ctx.fillRect(0, 414, 640, 6);
+            // logo circle
+            ctx.fillStyle = 'rgba(255,255,255,0.08)';
+            ctx.beginPath();
+            ctx.arc(56, 70, 40, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.fillStyle = '#fbbf24';
+            ctx.font = 'bold 26px sans-serif';
+            ctx.fillText('메리츠화재', 110, 60);
+            ctx.fillStyle = 'rgba(255,255,255,0.6)';
+            ctx.font = '15px sans-serif';
+            ctx.fillText('영업실적 현황', 112, 85);
+            ctx.strokeStyle = 'rgba(255,255,255,0.15)';
+            ctx.lineWidth = 1;
+            ctx.beginPath();
+            ctx.moveTo(40, 110);
+            ctx.lineTo(600, 110);
+            ctx.stroke();
+          } else if (type === 'yellow') {
+            ctx.fillStyle = '#fffbeb';
+            ctx.fillRect(0, 0, 640, 420);
+            ctx.fillStyle = '#1f2937';
+            ctx.fillRect(0, 0, 640, 88);
+            ctx.fillStyle = '#fbbf24';
+            ctx.font = 'bold 28px sans-serif';
+            ctx.fillText('메리츠화재', 24, 52);
+            ctx.fillStyle = 'rgba(255,255,255,0.55)';
+            ctx.font = '14px sans-serif';
+            ctx.fillText('영업 실적 리포트', 26, 74);
+            ctx.fillStyle = '#fbbf24';
+            ctx.fillRect(0, 88, 640, 4);
+            ctx.fillStyle = '#374151';
+            ctx.fillRect(0, 416, 640, 4);
+          } else {
+            ctx.fillStyle = '#111827';
+            ctx.fillRect(0, 0, 640, 420);
+            ctx.fillStyle = '#6366f1';
+            ctx.fillRect(0, 0, 640, 5);
+            ctx.fillStyle = '#f9fafb';
+            ctx.font = 'bold 26px sans-serif';
+            ctx.fillText('메리츠화재', 28, 54);
+            ctx.fillStyle = '#6b7280';
+            ctx.font = '14px sans-serif';
+            ctx.fillText('영업실적 현황', 30, 78);
+            ctx.strokeStyle = '#374151';
+            ctx.lineWidth = 1;
+            ctx.beginPath();
+            ctx.moveTo(28, 100);
+            ctx.lineTo(612, 100);
+            ctx.stroke();
+            ctx.fillStyle = '#6366f1';
+            ctx.fillRect(0, 415, 640, 5);
+          }
+        };
+        draw();
+        loadBg(canvas.toDataURL('image/png'));
+      }
+
+      // ══ TAP TO PLACE ══
+      const tWrapper = document.getElementById('templateWrapper');
+
+      function handleTap(clientX, clientY) {
+        if (!selCol) return;
+
+        // Get bounding rect of the IMAGE element (not the wrapper)
+        // so coordinates are relative to the displayed image
+        const imgEl = document.getElementById('bgImg');
+        const rect = imgEl.getBoundingClientRect();
+
+        // clamp inside image
+        const x = Math.max(0, Math.min(clientX - rect.left, rect.width));
+        const y = Math.max(0, Math.min(clientY - rect.top, rect.height));
+
+        placeField(selCol, x, y);
+        selCol = null;
+        refreshChips();
+        document.getElementById('tapOverlay').classList.remove('show');
+        document.getElementById('canvasZone').classList.remove('tap-ready');
+      }
+
+      // Click (desktop)
+      tWrapper.addEventListener('click', (e) => {
+        if (e.target.classList.contains('pf-remove')) return;
+        if (e.target.closest('.placed-field')) return;
+        handleTap(e.clientX, e.clientY);
+      });
+
+      // Touchend (mobile) — only on wrapper, propagation stopped by placed-field
+      tWrapper.addEventListener(
+        'touchend',
+        (e) => {
+          if (e.target.classList.contains('pf-remove')) return;
+          if (e.target.closest && e.target.closest('.placed-field')) return;
+          if (!selCol) return;
+          e.preventDefault();
+          const t = e.changedTouches[0];
+          handleTap(t.clientX, t.clientY);
+        },
+        { passive: false }
+      );
+
+      // ══ PLACE FIELD ══
+      function placeField(col, x, y) {
+        // remove existing
+        fields = fields.filter((f) => f.col !== col);
+        const old = document.querySelector(`.placed-field[data-col="${col}"]`);
+        if (old) old.remove();
+
+        const f = {
+          col,
+          x,
+          y,
+          fontSize: parseInt(document.getElementById('gSize').value),
+          color: document.getElementById('gColor').value,
+          fontWeight: document.getElementById('gWeight').value,
+          textAlign: document.getElementById('gAlign').value,
+        };
+        fields.push(f);
+        renderTag(f);
+        refreshFieldList();
+        refreshChips();
+        checkReady();
+        toast(`✅ [${col}] 배치 완료`);
+      }
+
+      // ══ RENDER TAG ══
+      function getAlignTransform(align) {
+        if (align === 'center') return 'translateX(-50%)';
+        if (align === 'right') return 'translateX(-100%)';
+        return '';
+      }
+
+      function renderTag(f) {
+        const el = document.createElement('div');
+        el.className = 'placed-field';
+        el.dataset.col = f.col;
+        el.style.left = f.x + 'px';
+        el.style.top = f.y + 'px';
+        el.style.fontSize = f.fontSize + 'px';
+        el.style.color = f.color;
+        el.style.fontWeight = f.fontWeight;
+        el.style.transform = getAlignTransform(f.textAlign || 'left');
+
+        const lbl = document.createElement('span');
+        lbl.className = 'pf-label';
+        lbl.textContent = `{${f.col}}`;
+
+        const btn = document.createElement('button');
+        btn.className = 'pf-remove';
+        btn.textContent = '×';
+        btn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          removeField(f.col);
+        });
+        btn.addEventListener(
+          'touchend',
+          (e) => {
+            e.stopPropagation();
+            e.preventDefault();
+            removeField(f.col);
+          },
+          { passive: false }
+        );
+
+        el.appendChild(lbl);
+        el.appendChild(btn);
+        tWrapper.appendChild(el);
+        makeDraggable(el, f);
+      }
+
+      // ══ DRAG PLACED TAG ══
+      function makeDraggable(el, ref) {
+        let sx, sy, ox, oy;
+
+        const startDrag = (cx, cy) => {
+          sx = cx;
+          sy = cy;
+          ox = ref.x;
+          oy = ref.y;
+        };
+        const moveDrag = (cx, cy) => {
+          ref.x = ox + cx - sx;
+          ref.y = oy + cy - sy;
+          el.style.left = ref.x + 'px';
+          el.style.top = ref.y + 'px';
+          refreshFieldList();
+        };
+
+        // Mouse
+        el.addEventListener('mousedown', (e) => {
+          if (e.target.classList.contains('pf-remove')) return;
+          e.preventDefault();
+          startDrag(e.clientX, e.clientY);
+          const onMove = (e) => moveDrag(e.clientX, e.clientY);
+          const onUp = () => {
+            document.removeEventListener('mousemove', onMove);
+            document.removeEventListener('mouseup', onUp);
+          };
+          document.addEventListener('mousemove', onMove);
+          document.addEventListener('mouseup', onUp);
+        });
+
+        // Touch
+        el.addEventListener(
+          'touchstart',
+          (e) => {
+            if (e.target.classList.contains('pf-remove')) return;
+            e.stopPropagation();
+            e.preventDefault();
+            const t = e.touches[0];
+            startDrag(t.clientX, t.clientY);
+          },
+          { passive: false }
+        );
+
+        el.addEventListener(
+          'touchmove',
+          (e) => {
+            e.stopPropagation();
+            e.preventDefault();
+            const t = e.touches[0];
+            moveDrag(t.clientX, t.clientY);
+          },
+          { passive: false }
+        );
+
+        el.addEventListener(
+          'touchend',
+          (e) => {
+            e.stopPropagation();
+          },
+          { passive: false }
+        );
+      }
+
+      function removeField(col) {
+        fields = fields.filter((f) => f.col !== col);
+        const el = document.querySelector(`.placed-field[data-col="${col}"]`);
+        if (el) el.remove();
+        refreshChips();
+        refreshFieldList();
+        checkReady();
+      }
+
+      // ══ FIELD LIST ══
+      function refreshFieldList() {
+        const sec = document.getElementById('fieldSection');
+        const list = document.getElementById('fieldList');
+        if (!fields.length) {
+          sec.style.display = 'none';
+          return;
+        }
+        sec.style.display = 'block';
+
+        // scale factors for display→canvas
+        const imgEl = document.getElementById('bgImg');
+        const sx = imgEl.naturalWidth / (imgEl.offsetWidth || 1);
+        const sy = imgEl.naturalHeight / (imgEl.offsetHeight || 1);
+
+        list.innerHTML = fields
+          .map(
+            (f) =>
+              `<div class="field-row">
+      <span class="fr-name">${f.col}</span>
+      <span class="fr-pos">x:${Math.round(f.x * sx)} y:${Math.round(f.y * sy)}</span>
+      <input type="number" value="${f.fontSize}" min="8" max="80"
+        onchange="setFieldStyle('${f.col}','fontSize',+this.value)">
+      <input type="color" value="${f.color}"
+        onchange="setFieldStyle('${f.col}','color',this.value)">
+      <button class="fr-del" onclick="removeField('${f.col}')">×</button>
+    </div>`
+          )
+          .join('');
+      }
+
+      function setFieldStyle(col, prop, val) {
+        const f = fields.find((f) => f.col === col);
+        if (!f) return;
+        f[prop] = val;
+        const el = document.querySelector(`.placed-field[data-col="${col}"]`);
+        if (el) {
+          if (prop === 'fontSize') el.style.fontSize = val + 'px';
+          if (prop === 'color') el.style.color = val;
+        }
+      }
+
+      function applyStyle() {
+        const fs = parseInt(document.getElementById('gSize').value);
+        const c = document.getElementById('gColor').value;
+        const fw = document.getElementById('gWeight').value;
+        const fa = document.getElementById('gAlign').value;
+        fields.forEach((f) => {
+          f.fontSize = fs;
+          f.color = c;
+          f.fontWeight = fw;
+          f.textAlign = fa;
+          const el = document.querySelector(`.placed-field[data-col="${f.col}"]`);
+          if (el) {
+            el.style.fontSize = fs + 'px';
+            el.style.color = c;
+            el.style.fontWeight = fw;
+            el.style.transform = getAlignTransform(fa);
+          }
+        });
+        refreshFieldList();
+        toast('✅ 스타일 전체 적용');
+      }
+
+      function checkReady() {
+        document.getElementById('btnGen').disabled = !(bgSrc && fields.length > 0 && rows.length > 0);
+      }
+
+      // ══ GENERATE + SAVE (File System Access API) ══
+      async function generate() {
+        if (!bgSrc || !fields.length || !rows.length) return;
+
+        // ── 1. 폴더 선택 다이얼로그 ──
+        let rootDir;
+        try {
+          rootDir = await window.showDirectoryPicker({ mode: 'readwrite' });
+        } catch (e) {
+          toast('⚠ 폴더 선택이 취소됐습니다');
+          return;
+        }
+
+        const folderColName = document.getElementById('folderCol').value;
+        const fileNameColName = document.getElementById('fileNameCol').value;
+        const folderColIdx = headers.indexOf(folderColName);
+        const fileNameColIdx = headers.indexOf(fileNameColName);
+
+        // ── 2. UI 초기화 ──
+        imgs = [];
+        const pw = document.getElementById('progressWrap');
+        pw.style.display = 'block';
+        document.getElementById('progressFill').style.width = '0%';
+        document.getElementById('progressText').textContent = '';
+        document.getElementById('card-results').style.display = 'none';
+        document.getElementById('btnGen').disabled = true;
+
+        // ── 3. 캔버스 준비 ──
+        const canvas = document.getElementById('rc');
+        const ctx = canvas.getContext('2d');
+        const srcImg = new Image();
+        await new Promise((resolve) => {
+          srcImg.onload = resolve;
+          srcImg.src = bgSrc;
+        });
+        canvas.width = srcImg.naturalWidth;
+        canvas.height = srcImg.naturalHeight;
+
+        const dispEl = document.getElementById('bgImg');
+        const sx = srcImg.naturalWidth / (dispEl.offsetWidth || 1);
+        const sy = srcImg.naturalHeight / (dispEl.offsetHeight || 1);
+
+        // ── 4. 서브폴더 핸들 캐시 (같은 소속이면 재사용) ──
+        const subDirCache = {};
+
+        async function getSubDir(name) {
+          const safe = name.replace(/[\/\\:*?"<>|]/g, '_').trim() || '기타';
+          if (!subDirCache[safe]) {
+            subDirCache[safe] = await rootDir.getDirectoryHandle(safe, { create: true });
+          }
+          return subDirCache[safe];
+        }
+
+        // ── 5. 저장 로그 ──
+        const log = document.getElementById('saveLog');
+        log.innerHTML = '';
+        const addLog = (msg, color = 'var(--text-2)') => {
+          log.innerHTML += `<div style="color:${color}">${msg}</div>`;
+          log.scrollTop = log.scrollHeight;
+        };
+
+        // ── 6. 행별 생성 → 즉시 저장 → 메모리 해제 ──
+        let successCount = 0,
+          errorCount = 0;
+
+        for (let i = 0; i < rows.length; i++) {
+          const row = rows[i];
+
+          // 캔버스에 그리기
+          ctx.clearRect(0, 0, canvas.width, canvas.height);
+          ctx.drawImage(srcImg, 0, 0);
+
+          for (const f of fields) {
+            const colIdx = headers.indexOf(f.col);
+            const value = String(colIdx >= 0 ? row[colIdx] ?? '' : '');
+            const nx = f.x * sx;
+            const ny = f.y * sy;
+            const nfs = f.fontSize * sx;
+            ctx.save();
+            ctx.font = `${f.fontWeight} ${nfs}px "Noto Sans KR","Inter",sans-serif`;
+            ctx.fillStyle = f.color;
+            ctx.textBaseline = 'top';
+            ctx.textAlign = f.textAlign || 'left';
+            ctx.shadowColor = 'rgba(0,0,0,0.35)';
+            ctx.shadowBlur = Math.round(nfs * 0.25);
+            ctx.shadowOffsetX = 0;
+            ctx.shadowOffsetY = 1;
+            ctx.fillText(value, nx, ny);
+            ctx.restore();
+          }
+
+          // PNG Blob 변환
+          const blob = await new Promise((resolve) => canvas.toBlob(resolve, 'image/png'));
+
+          // 파일명 결정
+          const rawName = fileNameColIdx >= 0 ? String(row[fileNameColIdx] ?? '') : '';
+          const safeName = (rawName || String(i + 1)).replace(/[\/\\:*?"<>|]/g, '_');
+          const fileName = `${safeName}.png`;
+
+          // 저장 대상 디렉토리 결정
+          let targetDir;
+          if (folderColIdx >= 0) {
+            const folderVal = String(row[folderColIdx] ?? '기타');
+            try {
+              targetDir = await getSubDir(folderVal);
+            } catch (e) {
+              addLog(`⚠ 폴더 생성 실패 [${folderVal}]: ${e.message}`, 'var(--danger)');
+              errorCount++;
+              continue;
+            }
+          } else {
+            targetDir = rootDir;
+          }
+
+          // 파일 쓰기
+          try {
+            const fileHandle = await targetDir.getFileHandle(fileName, { create: true });
+            const writable = await fileHandle.createWritable();
+            await writable.write(blob);
+            await writable.close();
+            const folderLabel = folderColIdx >= 0 ? `${String(row[folderColIdx])}/` : '';
+            addLog(`✅ ${folderLabel}${fileName}`, 'var(--success)');
+            successCount++;
+          } catch (e) {
+            addLog(`❌ ${fileName} 저장 실패: ${e.message}`, 'var(--danger)');
+            errorCount++;
+          }
+
+          // 진행률
+          const pct = Math.round(((i + 1) / rows.length) * 100);
+          document.getElementById('progressFill').style.width = pct + '%';
+          document.getElementById('progressText').textContent = `${i + 1} / ${rows.length} 저장 중... (${pct}%)`;
+
+          // 메모리 해제 — 다음 tick에 GC 기회 줌
+          await new Promise((r) => setTimeout(r, 4));
+        }
+
+        // ── 7. 완료 ──
+        document.getElementById('btnGen').disabled = false;
+        document.getElementById('progressText').textContent = `✅ ${successCount}개 저장 완료${errorCount ? ` / ❌ ${errorCount}개 실패` : ''}`;
+
+        document.getElementById('badge-res').textContent = `${successCount}개`;
+        document.getElementById('card-results').style.display = 'block';
+        document.getElementById('card-results').scrollIntoView({ behavior: 'smooth' });
+        setStep(4);
+        toast(`🎉 ${successCount}개 저장 완료!`);
+      }
+    </script>
+  
+
+<div class="glasp-extension-toaster" style="display: block; width: 320px; margin: unset; padding: unset; border: unset; border-radius: unset; outline: unset; background-color: unset; box-shadow: unset; position: fixed; top: 40px; right: 24px; z-index: 9999;"><template shadowrootmode="open"><div class="glasp-extension" style="font-family: inherit;"></div></template></div><webhighlights-element-registry elements-count="48"></webhighlights-element-registry><div id="webhighlights-notificationshldjnlbobkdkghfidgoecgmklcemanhm"></div><style id="web-highlights-global-style-variables">:root { --wh-slate-50: #f8fafc;--wh-slate-100: #f1f5f9;--wh-slate-200: #e2e8f0;--wh-slate-300: #cbd5e1;--wh-slate-400: #94a3b8;--wh-slate-500: #64748b;--wh-slate-600: #475569;--wh-slate-700: #334155;--wh-slate-800: #1e293b;--wh-slate-900: #0f172a;--wh-slate-950: #020617;--wh-primary-50: rgb(188, 220, 205);--wh-primary-100: rgb(154, 208, 185);--wh-primary-200: rgb(120, 197, 164);--wh-primary-300: rgb(86, 186, 144);--wh-primary-400: rgb(53, 176, 125);--wh-primary-500: rgb(0, 179, 122);--wh-primary-600: hsl(161, 100%, 33%);--wh-primary-700: hsl(161, 100%, 31%);--wh-primary-800: hsl(161, 100%, 29%);--wh-primary-900: hsl(161, 100%, 25%);--wh-primary-950: hsl(161, 100%, 20%);--wh-secondary-50: hsl(218, 22%, 27%);--wh-secondary-100: hsl(218, 22%, 23%);--wh-secondary-200: hsl(218, 22%, 22%);--wh-secondary-300: hsl(218, 22%, 19%);--wh-secondary-400: hsl(218, 22%, 17%);--wh-secondary-500: hsl(218, 22%, 15%);--wh-secondary-600: hsl(218, 22%, 13%);--wh-secondary-700: hsl(218, 22%, 11%);--wh-secondary-800: hsl(218, 22%, 9%);--wh-secondary-900: hsl(218, 22%, 5%);--wh-secondary-950: hsl(218, 22%, 3%);--wh-gray-50: #f9fafb;--wh-gray-100: #f3f4f6;--wh-gray-200: #e5e7eb;--wh-gray-300: #d1d5db;--wh-gray-400: #9ca3af;--wh-gray-500: #6b7280;--wh-gray-600: #4b5563;--wh-gray-700: #374151;--wh-gray-800: #1f2937;--wh-gray-900: #111827;--wh-gray-950: #030712;--wh-zinc-50: #fafafa;--wh-zinc-100: #f4f4f5;--wh-zinc-200: #e4e4e7;--wh-zinc-300: #d4d4d8;--wh-zinc-400: #a1a1aa;--wh-zinc-500: #71717a;--wh-zinc-600: #52525b;--wh-zinc-700: #3f3f46;--wh-zinc-800: #27272a;--wh-zinc-900: #18181b;--wh-zinc-950: #09090b;--wh-neutral-50: #fafafa;--wh-neutral-100: #f5f5f5;--wh-neutral-200: #e5e5e5;--wh-neutral-300: #d4d4d4;--wh-neutral-400: #a3a3a3;--wh-neutral-500: #737373;--wh-neutral-600: #525252;--wh-neutral-700: #404040;--wh-neutral-800: #262626;--wh-neutral-900: #171717;--wh-neutral-950: #0a0a0a;--wh-stone-50: #fafaf9;--wh-stone-100: #f5f5f4;--wh-stone-200: #e7e5e4;--wh-stone-300: #d6d3d1;--wh-stone-400: #a8a29e;--wh-stone-500: #78716c;--wh-stone-600: #57534e;--wh-stone-700: #44403c;--wh-stone-800: #292524;--wh-stone-900: #1c1917;--wh-stone-950: #0c0a09;--wh-red-50: #fef2f2;--wh-red-100: #fee2e2;--wh-red-200: #fecaca;--wh-red-300: #fca5a5;--wh-red-400: #f87171;--wh-red-500: #ef4444;--wh-red-600: #dc2626;--wh-red-700: #b91c1c;--wh-red-800: #991b1b;--wh-red-900: #7f1d1d;--wh-red-950: #450a0a;--wh-orange-50: #fff7ed;--wh-orange-100: #ffedd5;--wh-orange-200: #fed7aa;--wh-orange-300: #fdba74;--wh-orange-400: #fb923c;--wh-orange-500: #f97316;--wh-orange-600: #ea580c;--wh-orange-700: #c2410c;--wh-orange-800: #9a3412;--wh-orange-900: #7c2d12;--wh-orange-950: #431407;--wh-amber-50: #fffbeb;--wh-amber-100: #fef3c7;--wh-amber-200: #fde68a;--wh-amber-300: #fcd34d;--wh-amber-400: #fbbf24;--wh-amber-500: #f59e0b;--wh-amber-600: #d97706;--wh-amber-700: #b45309;--wh-amber-800: #92400e;--wh-amber-900: #78350f;--wh-amber-950: #451a03;--wh-yellow-50: #fefce8;--wh-yellow-100: #fef9c3;--wh-yellow-200: #fef08a;--wh-yellow-300: #fde047;--wh-yellow-400: #facc15;--wh-yellow-500: #eab308;--wh-yellow-600: #ca8a04;--wh-yellow-700: #a16207;--wh-yellow-800: #854d0e;--wh-yellow-900: #713f12;--wh-yellow-950: #422006;--wh-lime-50: #f7fee7;--wh-lime-100: #ecfccb;--wh-lime-200: #d9f99d;--wh-lime-300: #bef264;--wh-lime-400: #a3e635;--wh-lime-500: #84cc16;--wh-lime-600: #65a30d;--wh-lime-700: #4d7c0f;--wh-lime-800: #3f6212;--wh-lime-900: #365314;--wh-lime-950: #1a2e05;--wh-green-50: #f0fdf4;--wh-green-100: #dcfce7;--wh-green-200: #bbf7d0;--wh-green-300: #86efac;--wh-green-400: #4ade80;--wh-green-500: #22c55e;--wh-green-600: #16a34a;--wh-green-700: #15803d;--wh-green-800: #166534;--wh-green-900: #14532d;--wh-green-950: #052e16;--wh-emerald-50: #ecfdf5;--wh-emerald-100: #d1fae5;--wh-emerald-200: #a7f3d0;--wh-emerald-300: #6ee7b7;--wh-emerald-400: #34d399;--wh-emerald-500: #10b981;--wh-emerald-600: #059669;--wh-emerald-700: #047857;--wh-emerald-800: #065f46;--wh-emerald-900: #064e3b;--wh-emerald-950: #022c22;--wh-teal-50: #f0fdfa;--wh-teal-100: #ccfbf1;--wh-teal-200: #99f6e4;--wh-teal-300: #5eead4;--wh-teal-400: #2dd4bf;--wh-teal-500: #14b8a6;--wh-teal-600: #0d9488;--wh-teal-700: #0f766e;--wh-teal-800: #115e59;--wh-teal-900: #134e4a;--wh-teal-950: #042f2e;--wh-cyan-50: #ecfeff;--wh-cyan-100: #cffafe;--wh-cyan-200: #a5f3fc;--wh-cyan-300: #67e8f9;--wh-cyan-400: #22d3ee;--wh-cyan-500: #06b6d4;--wh-cyan-600: #0891b2;--wh-cyan-700: #0e7490;--wh-cyan-800: #155e75;--wh-cyan-900: #164e63;--wh-cyan-950: #083344;--wh-sky-50: #f0f9ff;--wh-sky-100: #e0f2fe;--wh-sky-200: #bae6fd;--wh-sky-300: #7dd3fc;--wh-sky-400: #38bdf8;--wh-sky-500: #0ea5e9;--wh-sky-600: #0284c7;--wh-sky-700: #0369a1;--wh-sky-800: #075985;--wh-sky-900: #0c4a6e;--wh-sky-950: #082f49;--wh-blue-50: #eff6ff;--wh-blue-100: #dbeafe;--wh-blue-200: #bfdbfe;--wh-blue-300: #93c5fd;--wh-blue-400: #60a5fa;--wh-blue-500: #3b82f6;--wh-blue-600: #2563eb;--wh-blue-700: #1d4ed8;--wh-blue-800: #1e40af;--wh-blue-900: #1e3a8a;--wh-blue-950: #172554;--wh-indigo-50: #eef2ff;--wh-indigo-100: #e0e7ff;--wh-indigo-200: #c7d2fe;--wh-indigo-300: #a5b4fc;--wh-indigo-400: #818cf8;--wh-indigo-500: #6366f1;--wh-indigo-600: #4f46e5;--wh-indigo-700: #4338ca;--wh-indigo-800: #3730a3;--wh-indigo-900: #312e81;--wh-indigo-950: #1e1b4b;--wh-violet-50: #f5f3ff;--wh-violet-100: #ede9fe;--wh-violet-200: #ddd6fe;--wh-violet-300: #c4b5fd;--wh-violet-400: #a78bfa;--wh-violet-500: #8b5cf6;--wh-violet-600: #7c3aed;--wh-violet-700: #6d28d9;--wh-violet-800: #5b21b6;--wh-violet-900: #4c1d95;--wh-violet-950: #2e1065;--wh-purple-50: #faf5ff;--wh-purple-100: #f3e8ff;--wh-purple-200: #e9d5ff;--wh-purple-300: #d8b4fe;--wh-purple-400: #c084fc;--wh-purple-500: #a855f7;--wh-purple-600: #9333ea;--wh-purple-700: #7e22ce;--wh-purple-800: #6b21a8;--wh-purple-900: #581c87;--wh-purple-950: #3b0764;--wh-fuchsia-50: #fdf4ff;--wh-fuchsia-100: #fae8ff;--wh-fuchsia-200: #f5d0fe;--wh-fuchsia-300: #f0abfc;--wh-fuchsia-400: #e879f9;--wh-fuchsia-500: #d946ef;--wh-fuchsia-600: #c026d3;--wh-fuchsia-700: #a21caf;--wh-fuchsia-800: #86198f;--wh-fuchsia-900: #701a75;--wh-fuchsia-950: #4a044e;--wh-pink-50: #fdf2f8;--wh-pink-100: #fce7f3;--wh-pink-200: #fbcfe8;--wh-pink-300: #f9a8d4;--wh-pink-400: #f472b6;--wh-pink-500: #ec4899;--wh-pink-600: #db2777;--wh-pink-700: #be185d;--wh-pink-800: #9d174d;--wh-pink-900: #831843;--wh-pink-950: #500724;--wh-rose-50: #fff1f2;--wh-rose-100: #ffe4e6;--wh-rose-200: #fecdd3;--wh-rose-300: #fda4af;--wh-rose-400: #fb7185;--wh-rose-500: #f43f5e;--wh-rose-600: #e11d48;--wh-rose-700: #be123c;--wh-rose-800: #9f1239;--wh-rose-900: #881337;--wh-rose-950: #4c0519;--wh-primary-color: var(--wh-primary-500);--wh-primary-color-hover: #00a16e;--wh-primary-color-transparent: #00aa7424;--wh-primary-color-transparent-light: #00a8730f;--wh-primary-color-transparent-strong: #00a87340;--wh-primary-color-transparent-stronger: hsla(161, 100%, 33%, 0.5);--wh-primary-color-transparent-strongest: hsla(161, 100%, 33%, 0.75);--wh-primary-light: #53e3a6;--wh-primary-dark: #007f4b;--wh-primary-dark-hover: #017444;--wh-primary-shadow: #00b07841;--wh-primary-shadow-2: #00b07870;--wh-primary-border-color: #c8c8c870;--wh-warning-color: #ff5a1f;--wh-warning-color-light: #feecdc;--wh-ai-primary-decimal: 167, 139, 250;--wh-ai-secondary-decimal  : 147, 51, 234;--wh-ai-accent-decimal: 244, 114, 182;--wh-ai-primary: rgba(var(--wh-ai-primary-decimal), 1);--wh-ai-secondary: rgba(var(--wh-ai-secondary-decimal), 1);--wh-ai-accent: rgba(var(--wh-ai-accent-decimal), 1);--secondary-color: #3d4455;--secondary-color-hover: #3a4052;--secondary-color-transparent: #3d44556b;--secondary-light: #4c556d;--secondary-dark: #252934;--secondary-dark-hover: #191b22;--secondary-dark-transparent: #2e2d2d46;--highlight-color: #92ffaa;--error-color: #d62d4c;--error-color-light: #fde8e8;--error-info: #14854e;--success-color: #0e9f6e;--success-color-light: #def7ec;--font-color: #2f3237;--font-color-light: #626364;--font-color-dark: #252525;--wh-font-family: 'SF Pro Display', 'Inter', ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI Variable Display", "Segoe UI", Helvetica, "Apple Color Emoji", Arial, sans-serif, "Segoe UI Emoji", "Segoe UI Symbol";--font-family: var(--wh-font-family);--wh-link-color: #1d9bf0;--wh-form-active-color: #3b82f6;--wh-accent-blue: #1f6feb;--BREAKPOINT_XS: 575px;--BREAKPOINT_S: 767px;--BREAKPOINT_M: 991px;--BREAKPOINT_L: 1199px;--BREAKPOINT_XL: 1399px;--BREAKPOINT_XXL: 1699px;--wh-danger-color: var(--wh-red-600);--wh-danger-color-hover: var(--wh-red-700);--wh-font-size: 13px;--wh-blockquote-line-height: 1.3;--wh-breakpoint-xs: 575px;--wh-breakpoint-s: 767px;--wh-breakpoint-m: 991px;--wh-breakpoint-l: 1199px;--wh-breakpoint-xl: 1399px;--wh-breakpoint-xxl: 1699px;--wh-font-size-2xs: 10px;--wh-font-size-xs: 11px;--wh-font-size-s: 12px;--wh-font-size-m: 13px;--wh-font-size-l: 14px;--wh-font-size-xl: 16px;--wh-font-size-2xl: 18px;--wh-font-size-3xl: 20px;--wh-font-size-4xl: 24px;--wh-font-size-5xl: 30px;--wh-font-size-6xl: 36px;--wh-spacing-2xs: 2px;--wh-spacing-xs: 4px;--wh-spacing-s: 8px;--wh-spacing-m: 12px;--wh-spacing-l: 16px;--wh-spacing-xl: 24px;--wh-spacing-2xl: 32px;--wh-spacing-3xl: 48px;--wh-spacing-4xl: 64px;--wh-spacing-5xl: 96px;--wh-border-radius-none: 0px;--wh-border-radius-xs: 2px;--wh-border-radius-s: 4px;--wh-border-radius-m: 6px;--wh-border-radius-l: 8px;--wh-border-radius-xl: 12px;--wh-border-radius-2xl: 16px;--wh-border-radius-3xl: 24px;--wh-border-radius-full: 9999px;--wh-font-weight-light: 300;--wh-font-weight-normal: 400;--wh-font-weight-medium: 500;--wh-font-weight-semibold: 600;--wh-font-weight-bold: 700;--wh-font-weight-extrabold: 800;--wh-line-height-tight: 1.25;--wh-line-height-snug: 1.375;--wh-line-height-normal: 1.5;--wh-line-height-relaxed: 1.625;--wh-line-height-loose: 2;--wh-bg-base: var(--wh-secondary-600);--wh-bg-base-hover: var(--wh-secondary-500);--wh-border-base: var(--wh-secondary-200);--wh-border-base-hover: var(--wh-secondary-100);--wh-border-base-strong: var(--wh-secondary-100);--wh-border-base-strong-hover: var(--wh-secondary-50);--wh-bg-base-hover-strong: var(--wh-secondary-300);--wh-bg-back: var(--wh-secondary-700);--wh-bg-back-strong: var(--wh-secondary-800);--wh-bg-back-strong-hover: var(--wh-secondary-900);--wh-bg-back-hover: var(--wh-secondary-600);--wh-bg-back-hover-strong: var(--wh-secondary-800);--wh-border-back: var(--wh-secondary-100);--wh-border-back-strong: var(--wh-secondary-50);--wh-bg-front: var(--wh-secondary-400);--wh-bg-front-strong: var(--wh-secondary-200);--wh-bg-front-strong-hover: var(--wh-secondary-50);--wh-bg-front-hover: var(--wh-secondary-300);--wh-bg-front-hover-strong: var(--wh-secondary-200);--wh-border-front: hsl(227, 20%, 25%);--wh-border-front-strong: hsl(227, 20%, 35%);--wh-border-front-hover: hsl(227, 20%, 55%);--wh-text-stronger: hsl(0, 0%, 95%);--wh-text-strongest: hsl(0, 0%, 100%);--wh-text-strong: hsl(0, 0%, 90%);--wh-text: hsl(0, 0%, 85%);--wh-text-hover: var(--wh-text-strong);--wh-text-light: hsl(0, 0%, 82%);--wh-text-lighter: hsl(0, 0%, 72%);--wh-text-lightest: hsl(0, 0%, 62%);--wh-border-color: hsla(0, 0%, 100%, 0.15);--wh-border-color-strong: hsla(0, 0%, 100%, 0.25);--wh-note-editor-bg-color: hsl(221, 27%, 17%);--wh-note-editor-bg-color-preview: hsl(221, 27%, 15%);--wh-bg-tags: var(--wh-secondary-300);--wh-bg-tags-hover: var(--wh-secondary-200);--wh-syntax-bg-color: rgba(255, 255, 255, 0.05);--wh-fallback-img-color: var(--wh-secondary-600);--wh-bg-disabled: hsl(220, 22%, 18%);--wh-bg-notification-unread: hsla(161, 100%, 20%, 0.15);--wh-bg-notification-unread-hover: hsla(161, 100%, 20%, 0.05);--wh-subtle-gray: rgb(255, 255, 255, 0.1);--wh-shadow: inset 0 0 0.5px 1px hsla(0, 0%, 100%, 0.1),
+      /* 2. shadow ring 👇 */ 0 0 0 1px hsla(230, 13%, 9%, 0.075),
+      /* 3. multiple soft shadows 👇 */ 0 0.3px 0.4px hsla(230, 13%, 9%, 0.02),
+      0 0.9px 1.5px hsla(230, 13%, 9%, 0.045),
+      0 3.5px 6px hsla(230, 13%, 9%, 0.09);--wh-shadow-primary: var(--wh-primary-500) 0px 0px 0px 1px inset,
+      var(--wh-primary-500) 0px 0px 1px;--wh-skeleton-bg: var(--wh-secondary-300);--wh-skeleton-bg-hover: var(--wh-secondary-200);--wh-skeleton-bg-strong: var(--wh-secondary-200);--wh-skeleton-bg-strong-hover: var(--wh-secondary-100);--wh-shadow-xs: 0 1px 2px 0 rgba(0, 0, 0, 0.3);--wh-shadow-s: 0 1px 3px 0 rgba(0, 0, 0, 0.4), 0 1px 2px -1px rgba(0, 0, 0, 0.4);--wh-shadow-m: 0 4px 6px -1px rgba(0, 0, 0, 0.4), 0 2px 4px -2px rgba(0, 0, 0, 0.4);--wh-shadow-l: 0 10px 15px -3px rgba(0, 0, 0, 0.4), 0 4px 6px -4px rgba(0, 0, 0, 0.4);--wh-shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.4), 0 8px 10px -6px rgba(0, 0, 0, 0.4);--wh-shadow-2xl: 0 25px 50px -12px rgba(0, 0, 0, 0.5);--wh-warning-bg: rgba(245, 158, 11, 0.08);--wh-warning-bg-hover: rgba(245, 158, 11, 0.10);--wh-warning-border: rgba(245, 158, 11, 0.2);--wh-warning-text: #f59e0b; }</style><div id="give-freely-root-hldjnlbobkdkghfidgoecgmklcemanhm" class="give-freely-root" data-extension-id="hldjnlbobkdkghfidgoecgmklcemanhm" data-extension-name="Web Highlights: PDF &amp; Web Highlighter + Notes &amp; AI Summary" style="display: block;"><template shadowrootmode="open"><style>
+  :host {
+    all: initial;
+  }
+
+  .gf-scroll-remove::-webkit-scrollbar {
+    border-radius-bottom-right: 15px;
+  }
+
+  button {
+    cursor: pointer;
+    transition: transform 0.1s ease;
+  }
+
+  button:active {
+    transform: scale(0.98);
+  }
+
+  .give-freely-close-button:hover {
+    opacity: 0.7;
+  }
+
+  input[type="radio"] {
+    margin-right: 8px;
+  }
+
+  hr {
+    border: none;
+    border-top: 1px solid #e5e5e5;
+    margin: 1em 0;
+  }
+
+  dialog::backdrop  {
+    background-color: rgba(180, 180, 180, 0.6);
+  }
+
+  dialog.backdrop-hidden::backdrop  {
+    background-color: transparent;
+  }
+</style><div><div class="gf-app"></div></div></template></div><style id="web-highlights-global-styles">
+  webhighlights-sidebar {
+    --wh-font-size: 13.5px;
+  }
+
+  body.web-highlights-animate {
+    transition: all 300ms linear;
+    transition-property: margin-left, margin-right;
+  }
+
+  body.web-highlights-open {
+    margin-left: 400px !important;
+  }
+
+  web-highlight.webhighlights-highlight {
+    background-color: #92ffaa;
+    cursor: pointer;
+    visibility: visible !important;
+  }
+
+  web-highlight.webhighlights-highlight.webhighlight-with-tags,
+  web-highlight.webhighlights-highlight.webhighlight-with-notes {
+    border-bottom: 2.8px solid gray;
+    border-radius: 0px;
+  }
+
+  web-highlight > *:not(webhighlights-popup-toolbox) {
+    background-color: #92ffaa;
+  }
+
+  webhighlights-popup-toolbox.contains-highlight {
+    transform: translate(-63px, -10px);
+    position: fixed;
+  }
+</style><webhighlights-popup-toolbox><template shadowrootmode="open"><!----><!--?--></template></webhighlights-popup-toolbox><webhighlights-marker><template shadowrootmode="open"><!---->
+      <!--?lit$169041260$-->
+    </template></webhighlights-marker></body><div class="glasp-extension" style="display: block; width: unset; margin: unset; padding: unset; border: unset; border-radius: unset; outline: unset; background-color: unset; box-shadow: unset; position: fixed; bottom: 16px; right: 16px; z-index: 9999;"><div class="glasp-extension" style="font-family: inherit;"></div></div><webhighlights-sidebar alignment="left" sidebar-width="400"><template shadowrootmode="open"><!---->
+      <!--?lit$169041260$-->
+            <webhighlights-main-component part="main-component" data-testid="webhighlights-sidebar-MAIN_COMPONENT" style="left: 0px; right: unset;"><template shadowrootmode="open"><!---->
+      <webhighlights-popover data-testid="webhighlights-main-component-POPOVER"><template shadowrootmode="open"><!----><!--?--></template>
+        <!--?lit$169041260$--><!--?-->
+      </webhighlights-popover>
+
+      <!-- Button to toggle side-bar. It hides when animation is active -->
+      <!--?lit$169041260$--><!--?-->
+      <!--?lit$169041260$-->
+    </template></webhighlights-main-component>
+          
+      <!--?lit$169041260$--><!--?-->
+    </template></webhighlights-sidebar></html>
